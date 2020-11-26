@@ -1,43 +1,38 @@
+from django.conf import settings
+
+import os
 import logging
 import asyncio
+import json
+
 from hbmqtt.broker import Broker
 from hbmqtt.client import MQTTClient, ClientException
 from hbmqtt.mqtt.constants import QOS_1 
 
+from service import split_json_and_create_data
+
 logger = logging.getLogger(__name__)
 
-config = {
-    'listeners': {
-        'default': {
-            'type': 'tcp',
-            'bind': 'localhost:9999',    # 0.0.0.0:1883
-            'max-connections': 50000,
-        },
-    },
-    'sys_interval': 500,
-    'topic-check': {
-        'enabled': True,
-        'plugins': ['topic_taboo'],
-    }
-}
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_mqtt.settings')
 
-broker = Broker(config)
+broker = Broker(settings.MQTT_CONFIG)
 
 async def startBroker():
     await broker.start()
 
 async def brokerGetMessage():
     client = MQTTClient()
-    await client.connect('mqtt://localhost:9999/')
+    await client.connect('mqtt://localhost:1883/')
     await client.subscribe([
-        ('LINTANGtopic/test', QOS_1)
+        ('data', QOS_1)
     ])
     logger.info('Subscribed!')
     try: 
         for i in range(1, 100):
             message = await client.deliver_message()
             packet = message.publish_packet
-            print(packet.payload.data.decode('utf-8'))
+            data = json.loads(packet.payload.data.decode('utf-8'))
+            await split_json_and_create_data(data, logger)
     except ClientException as ce:
         logger.error(f'Client exception {ce}')
 

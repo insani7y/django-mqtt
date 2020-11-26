@@ -9,8 +9,11 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
+
+# if __name__ == "__main__":
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "django_mqtt.settings")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,9 +40,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'silk',
+
+    'detector',
 ]
 
 MIDDLEWARE = [
+    'silk.middleware.SilkyMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -75,8 +83,12 @@ WSGI_APPLICATION = 'django_mqtt.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'CourseWork',
+        'USER': 'postgres',
+        'PASSWORD': 'pass',
+        'HOST': '127.0.0.1',
+        'PORT': 5432
     }
 }
 
@@ -118,3 +130,23 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# MQTT CONFIG
+MQTT_CONFIG = {
+    'listeners': {
+        'default': {
+            'type': 'tcp',
+            'bind': 'localhost:1883',    # 0.0.0.0:1883
+            'max-connections': 50000,
+        },
+    },
+    'sys_interval': 5,
+    'topic-check': {
+        'enabled': True,
+        'plugins': ['topic_taboo'],
+    }
+}
+
+# Limits
+LOWER_DETECTOR_DATA_LIMIT = 0.00
+HIGHER_DETECTOR_DATA_LIMIT = 10.00
