@@ -11,6 +11,6 @@ django.setup()
 from detector.models import Detector, DetectorData
 
 @sync_to_async
-def split_json_and_create_data(data, logger):
+def split_json_and_create_data(data):
     data['detector'] = get_object_or_404(Detector, id=data.pop('id'))
     DetectorData.objects.create(**data)

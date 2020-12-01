@@ -32,7 +32,7 @@ async def brokerGetMessage():
             message = await client.deliver_message()
             packet = message.publish_packet
             data = json.loads(packet.payload.data.decode('utf-8'))
-            await split_json_and_create_data(data, logger)
+            await split_json_and_create_data(data)
     except ClientException as ce:
         logger.error(f'Client exception {ce}')
 
